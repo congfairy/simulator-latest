@@ -49,9 +49,8 @@ break;
 }
 return pid;
 }
-function compute(starttime,endtime,pid,filepath)
+function compute(starttime,endtime,pid)
 {
-gsub("home",pid,filepath);
 find=0;
 gsub("Z","",starttime);
 gsub("T"," ",starttime);
@@ -59,18 +58,18 @@ gsub("Z","",endtime);
 gsub("T"," ",endtime);
 for(i=0;i<no;i++)
 {
-if(filepath==filestr[i])
+if(pid==pidstr[i])
 {
 find=1;
 cmd="echo $(date -d \""starttime"\" +%s%N) - $(date -d \""timestr[i]"\" +%s%N) | bc";
 cmd | getline var;
 close(cmd);
-filestr[i]=filepath;
+pidstr[i]=pid;
 timestr[i]=endtime;
 }
 }
 if(find==0){
-filestr[no++]=filepath;
+pidstr[no++]=pid;
 timestr[tno++]=endtime;
 var=0;
 }
@@ -78,7 +77,7 @@ return var;
 }
 {
 ppid=compare($12,$9,$10);
-dur=compute($1,$2,ppid,$10);
+dur=compute($1,$2,ppid);
 if(dur!=0)
 {printf("%s %s %s %.9f\n",ppid,"compute",$10,dur*(1e-9))}
 if($12=="read")

@@ -76,7 +76,7 @@ static void simopen(const char *const *action) {
   MSG_process_sleep(sleeptime);
   sprintf(full_name, "%s:%s:%s", file_name,MSG_process_get_name(MSG_process_self()),index);
   ACT_DEBUG("Entering Open: %s (filename: %s)", NAME, file_name);
-  file = MSG_file_open(full_name, NULL);
+  file = MSG_file_open(file_name, NULL);
   xbt_dict_set(opened_files, full_name, file, NULL);
   log_action(action, MSG_get_clock() - clock);
   XBT_INFO("open worker %s%s is done",processid,index);
@@ -128,7 +128,7 @@ static void simcreat(const char *const *action) {
   sleeptime = atof(worktime);
   MSG_process_sleep(sleeptime);
   ACT_DEBUG("Entering Creat: %s (filename: %s)", NAME, file_name);
-  file = MSG_file_open(full_name, NULL);
+  file = MSG_file_open(file_name, NULL);
   log_action(action, MSG_get_clock() - clock);
   XBT_INFO("creat worker %s %s is done",processid,index);
   xbt_dict_set(opened_files, full_name, file, NULL);
