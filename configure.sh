@@ -3,6 +3,7 @@ filename=$1
 fileactiontrace=${filename%.*}"_action_trace.txt"
 filecontent="storage_content.txt"
 filedeployment=${filename%.*}"_deployment.xml"
+filetime=${filename%.*}"_time.xml"
 awk -F',' '/file,open/ {gsub("/home","",$10);print $10" "$15}' $filename  | sort -u -k1,1 > $filecontent
 
 printf "<?xml version='1.0'?>\n<!DOCTYPE platform SYSTEM \"http://simgrid.gforge.inria.fr/simgrid.dtd\">\n<platform version=\"3\">\n" >$filedeployment
@@ -20,6 +21,40 @@ else{
 };
 printf(" <process host=\"denise\" function=\"%s\" start_time=\"%.9f\"/>\n",$9,(var/1e9))}'  $filename >> $filedeployment 
 echo "</platform>" >> $filedeployment
+
+
+starttime=0;
+awk -F',' '/file/&&!d[$9]++ && $9!=0{
+if(starttime==0)
+{starttime=$1;
+}
+else{
+   gsub("Z","",$1);
+   gsub("T"," ",$1);
+   gsub("Z","",starttime);
+   gsub("T"," ",starttime);
+   cmd="echo $(date -d \""$1"\" +%s%N) - $(date -d \""starttime"\" +%s%N) | bc";
+   cmd | getline var;
+   close(cmd);
+};
+printf(" process=\"%s\" start_time=\"%.9f\"\n",$9,(var/1e9))}
+' $filename > $filetime
+echo "====================================================">>$filetime
+starttime=0;
+awk -F',' '/file/&&$9!=0 {
+if(starttime==0)
+  {starttime=$1;}
+a[$9]=$2;
+}END{for(i=1;i<=asorti(a,b);i++)
+{
+   gsub("Z","",a[b[i]]);
+   gsub("T"," ",a[b[i]]);
+   gsub("Z","",starttime);
+   gsub("T"," ",starttime);
+   cmd="echo $(date -d \""a[b[i]]"\" +%s%N) - $(date -d \""starttime"\" +%s%N) | bc";
+   cmd | getline var;
+   close(cmd);
+printf("process=\"%s\" end_time=\"%.9f\"\n",b[i],(var/1e9))}}' $filename >>$filetime
 
 awk -F ',' '/file/' $filename|awk -F',' '
 function compare(action,pid,filepath)
